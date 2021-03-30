@@ -7,6 +7,7 @@
 #     HAOUAS, Mohammed Najib - 06 mars 2021
 #
 #   RÉSUMÉ DES CHANGEMENTS :
+#     03/10/2021 - Correction problème génération des fichiers identiques
 #     03/08/2021 - Disponibilité initiale.
 #
 #   USAGE :
@@ -49,26 +50,26 @@ if __name__ == "__main__":
     # Parameters
     max_coord = 2000
 
-    # Record of generated points to avoid duplicates
-    pdict = [(max_coord + 1) * [False] for _ in range(max_coord + 1)]
+    for file_n in range(args.nb_exemplaires):
+        # Record of generated points to avoid duplicates
+        pdict = [(max_coord + 1) * [False] for _ in range(max_coord + 1)]
 
-    # Preallocate
-    res = [2 * [0] for _ in range(args.taille)]
-    
-    # Generate points
-    for i in range(args.taille):
-        res[i][0] = random.randint(0, max_coord)
-        res[i][1] = random.randint(0, max_coord)
-
-        # Point is duplicate? Regenerate.
-        while pdict[res[i][0]][res[i][1]]:
+        # Preallocate
+        res = [2 * [0] for _ in range(args.taille)]
+        
+        # Generate points
+        for i in range(args.taille):
             res[i][0] = random.randint(0, max_coord)
             res[i][1] = random.randint(0, max_coord)
-        pdict[res[i][0]][res[i][1]] = True
 
-    # Write
-    for i in range(args.nb_exemplaires):
-        with open(args.prefixe + 'N' + str(args.taille) + '_' + str(i),'w') as inst:
+            # Point is duplicate? Regenerate.
+            while pdict[res[i][0]][res[i][1]]:
+                res[i][0] = random.randint(0, max_coord)
+                res[i][1] = random.randint(0, max_coord)
+            pdict[res[i][0]][res[i][1]] = True
+
+        # Write
+        with open(args.prefixe + 'N' + str(args.taille) + '_' + str(file_n),'w') as inst:
             inst.write("%d\n" % args.taille)
 
             for i in range(args.taille):
