@@ -103,18 +103,6 @@ void printPath(vector<vector<int>>& distancesMatrix, size_t numCities,  int mask
     return vertices[mask][pos] = minDistance;
 }
 
-
-int approx(vector<city>& cities) {
-    vector<city> result;
-    int totalDistance = 0;
-
-    result.push_back(cities[0]);
-
-    //TODO
-
-    return totalDistance;
-}
-
 // Mainly from guide bash
 int main(int argc, char* argv[]) {
     struct {
