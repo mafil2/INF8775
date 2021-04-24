@@ -5,8 +5,7 @@
 using namespace std;
 
 struct block {
-    int value;
-    int cost;
+    int netGain;
     bool isDug;
 };
 
@@ -32,15 +31,14 @@ int main(int argc, char* argv[]) {
         site.push_back(vector<block>());
         for (int j = 0; j < m; j++) {
             ex_file >> data;
-            site[i][j].value = data;
-            site[i][j].isDug = false;
+            site[i].push_back({ data, false });
         }
     }
-    //Fill with costs
+    // Deduce costs
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             ex_file >> data;
-            site[i][j].cost = data;
+            site[i][j].netGain -= data;
         }
     }
 
