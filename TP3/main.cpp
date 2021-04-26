@@ -14,16 +14,18 @@ vector<pair<int, int>> result;
 int bestScore = 0;
 int profit = 0;
 int n, m;
+const int NUM_REPLAYS = 200; // Arbitrary value to prevent force stop after 3 min
+const int NUM_ITERATIONS = 20000; // Treshold after which we juge nothing better can be done
 
 bool canDig(vector<column>& area, int xPos) {
-    if (xPos < 0 || xPos > area.size() - 1)
+    if (xPos < 0 || xPos > area.size() - 1 || area[xPos].blocks.empty())
         return false;
-
+    int currentColumHeight = area[xPos].blocks.size();
     return
-        (area[xPos].blocks.size() == n) ||
-        (xPos == 0 && area[xPos + 1].blocks.size() <= area[xPos].blocks.size()) ||
-        (xPos == area.size() - 1 && area[xPos - 1].blocks.size() <= area[xPos].blocks.size()) ||
-        (xPos > 0 && xPos < area.size() - 1 && area[xPos - 1].blocks.size() <= area[xPos].blocks.size() && area[xPos + 1].blocks.size() <= area[xPos].blocks.size());
+        (currentColumHeight == n) ||
+        (xPos == 0 && area[xPos + 1].blocks.size() <= currentColumHeight) ||
+        (xPos == area.size() - 1 && area[xPos - 1].blocks.size() <= currentColumHeight) ||
+        (xPos > 0 && xPos < area.size() - 1 && area[xPos - 1].blocks.size() <= currentColumHeight && area[xPos + 1].blocks.size() <= currentColumHeight);
 }
 
 bool isProfitable(vector<column>& area, int i) {
@@ -56,29 +58,30 @@ void digColumn(vector<column>& area, int pos) {
     area[pos].blocks.pop();
 }
 
-// Checks if all blocks that can be digged return a negative profit
-bool isOnlyNegativeGainAvailable(vector<column>& area) {
+void digPositiveBlocksOnTop(vector<column>& area) {
     for (int i = 0; i < area.size(); i++) {
-        if (!area[i].blocks.empty() && area[i].blocks.top() >= 0 && canDig(area, i))
-            return false;
+        if (area[i].blocks.top() >= 0 && canDig(area, i))
+            digColumn(area, i);
     }
-    return true;
 }
 
 void extract(vector<column> area) {
     int attempts = 0;
-    while (true) {
-        int col = findProfitableColumn(area);
-        if (!canDig(area, col)) {
-            attempts++;
-            if (attempts < 100000) continue; // Treshold after which we juge nothing better can be done
-            return;
-        }
+    while (attempts < NUM_ITERATIONS) { 
+        digPositiveBlocksOnTop(area);
 
-        attempts = 0;
-        for (int i = 0; i < area.size(); i++) {
-            while (!area[i].blocks.empty() && area[i].blocks.top() >= 0 && canDig(area, i))
-                digColumn(area, i);
+        int col = findProfitableColumn(area);
+        if (col == -1 || !(canDig(area, col) || canDig(area, col - 1) || canDig(area, col + 1))) {
+            attempts++;
+            continue;
+        }
+        while ((canDig(area, col - 1) || canDig(area, col) || canDig(area, col + 1)) && isProfitable(area, col)) {
+            if (canDig(area, col - 1))
+                digColumn(area, col - 1);
+            if (canDig(area, col))
+                digColumn(area, col);
+            if (canDig(area, col + 1))
+                digColumn(area, col + 1);
         }
     }
 }
@@ -129,9 +132,8 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    const int numReplays = 200; // Arbitrary value to prevent force stop after 3 min
     int i = 0;
-    while (i < numReplays) {
+    while (i < NUM_REPLAYS) {
         profit = 0;
         extract(area);
         if (profit > bestScore) {
